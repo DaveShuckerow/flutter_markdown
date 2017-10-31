@@ -86,7 +86,7 @@ void main() {
         .pumpWidget(_wrapLtr(const Markdown(data: '[Link Text](href)')));
 
     final RichText textWidget =
-    tester.allWidgets.firstWhere((Widget widget) => widget is RichText);
+        tester.allWidgets.firstWhere((Widget widget) => widget is RichText);
     final TextSpan span = textWidget.text;
 
     expect(
@@ -134,7 +134,7 @@ void main() {
 
     final MarkdownStyleSheet style1 = new MarkdownStyleSheet.fromTheme(theme);
     final MarkdownStyleSheet style2 =
-    new MarkdownStyleSheet.largeFromTheme(theme);
+        new MarkdownStyleSheet.largeFromTheme(theme);
     expect(style1, isNot(style2));
 
     await tester.pumpWidget(
