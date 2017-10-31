@@ -9,8 +9,12 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 
 void main() {
+  TextTheme textTheme = new Typography(platform: TargetPlatform.android)
+      .black
+      .merge(new TextTheme(body1: new TextStyle(fontSize: 12.0)));
+
   testWidgets('Simple string', (WidgetTester tester) async {
-    await tester.pumpWidget(_wrapLtr(const MarkdownBody(data: 'Hello')));
+    await tester.pumpWidget(_boilerplate(const MarkdownBody(data: 'Hello')));
 
     final Iterable<Widget> widgets = tester.allWidgets;
     _expectWidgetTypes(
@@ -19,7 +23,7 @@ void main() {
   });
 
   testWidgets('Header', (WidgetTester tester) async {
-    await tester.pumpWidget(_wrapLtr(const MarkdownBody(data: '# Header')));
+    await tester.pumpWidget(_boilerplate(const MarkdownBody(data: '# Header')));
 
     final Iterable<Widget> widgets = tester.allWidgets;
     _expectWidgetTypes(
@@ -28,14 +32,14 @@ void main() {
   });
 
   testWidgets('Empty string', (WidgetTester tester) async {
-    await tester.pumpWidget(_wrapLtr(const MarkdownBody(data: '')));
+    await tester.pumpWidget(_boilerplate(const MarkdownBody(data: '')));
 
     final Iterable<Widget> widgets = tester.allWidgets;
     _expectWidgetTypes(widgets, <Type>[Directionality, MarkdownBody, Column]);
   });
 
   testWidgets('Ordered list', (WidgetTester tester) async {
-    await tester.pumpWidget(_wrapLtr(
+    await tester.pumpWidget(_boilerplate(
       const MarkdownBody(data: '1. Item 1\n1. Item 2\n2. Item 3'),
     ));
 
@@ -52,7 +56,7 @@ void main() {
 
   testWidgets('Unordered list', (WidgetTester tester) async {
     await tester.pumpWidget(
-      _wrapLtr(const MarkdownBody(data: '- Item 1\n- Item 2\n- Item 3')),
+      _boilerplate(const MarkdownBody(data: '- Item 1\n- Item 2\n- Item 3')),
     );
 
     final Iterable<Widget> widgets = tester.allWidgets;
@@ -67,7 +71,7 @@ void main() {
   });
 
   testWidgets('Scrollable wrapping', (WidgetTester tester) async {
-    await tester.pumpWidget(_wrapLtr(const Markdown(data: '')));
+    await tester.pumpWidget(_boilerplate(const Markdown(data: '')));
 
     final List<Widget> widgets = tester.allWidgets.toList();
     _expectWidgetTypes(widgets.take(3), <Type>[
@@ -83,10 +87,10 @@ void main() {
 
   testWidgets('Links', (WidgetTester tester) async {
     await tester
-        .pumpWidget(_wrapLtr(const Markdown(data: '[Link Text](href)')));
+        .pumpWidget(_boilerplate(const Markdown(data: '[Link Text](href)')));
 
     final RichText textWidget =
-        tester.allWidgets.firstWhere((Widget widget) => widget is RichText);
+    tester.allWidgets.firstWhere((Widget widget) => widget is RichText);
     final TextSpan span = textWidget.text;
 
     expect(
@@ -100,7 +104,7 @@ void main() {
     ];
 
     for (String mdLine in mdData) {
-      await tester.pumpWidget(_wrapLtr(new MarkdownBody(data: mdLine)));
+      await tester.pumpWidget(_boilerplate(new MarkdownBody(data: mdLine)));
 
       final Iterable<Widget> widgets = tester.allWidgets;
       _expectTextStrings(widgets, <String>['Line 1', 'Line 2']);
@@ -109,7 +113,7 @@ void main() {
 
   testWidgets('Less than', (WidgetTester tester) async {
     final String mdLine = 'Line 1 <\n\nc < c c\n\n< Line 2';
-    await tester.pumpWidget(_wrapLtr(new MarkdownBody(data: mdLine)));
+    await tester.pumpWidget(_boilerplate(new MarkdownBody(data: mdLine)));
 
     final Iterable<Widget> widgets = tester.allWidgets;
     _expectTextStrings(
@@ -117,32 +121,32 @@ void main() {
   });
 
   testWidgets('Changing config - data', (WidgetTester tester) async {
-    await tester.pumpWidget(_wrapLtr(const Markdown(data: 'Data1')));
+    await tester.pumpWidget(_boilerplate(const Markdown(data: 'Data1')));
     _expectTextStrings(tester.allWidgets, <String>['Data1']);
 
     final String stateBefore = _dumpRenderView();
-    await tester.pumpWidget(_wrapLtr(const Markdown(data: 'Data1')));
+    await tester.pumpWidget(_boilerplate(const Markdown(data: 'Data1')));
     final String stateAfter = _dumpRenderView();
     expect(stateBefore, equals(stateAfter));
 
-    await tester.pumpWidget(_wrapLtr(const Markdown(data: 'Data2')));
+    await tester.pumpWidget(_boilerplate(const Markdown(data: 'Data2')));
     _expectTextStrings(tester.allWidgets, <String>['Data2']);
   });
 
   testWidgets('Changing config - style', (WidgetTester tester) async {
-    final ThemeData theme = new ThemeData.light();
+    final ThemeData theme = new ThemeData.light().copyWith(textTheme: textTheme);
 
     final MarkdownStyleSheet style1 = new MarkdownStyleSheet.fromTheme(theme);
     final MarkdownStyleSheet style2 =
-        new MarkdownStyleSheet.largeFromTheme(theme);
+    new MarkdownStyleSheet.largeFromTheme(theme);
     expect(style1, isNot(style2));
 
     await tester.pumpWidget(
-      _wrapLtr(new Markdown(data: '# Test', styleSheet: style1)),
+      _boilerplate(new Markdown(data: '# Test', styleSheet: style1)),
     );
     final RichText text1 = tester.widget(find.byType(RichText));
     await tester.pumpWidget(
-      _wrapLtr(new Markdown(data: '# Test', styleSheet: style2)),
+      _boilerplate(new Markdown(data: '# Test', styleSheet: style2)),
     );
     final RichText text2 = tester.widget(find.byType(RichText));
 
@@ -150,7 +154,7 @@ void main() {
   });
 
   testWidgets('Style equality', (WidgetTester tester) async {
-    final ThemeData theme = new ThemeData.light();
+    final ThemeData theme = new ThemeData.light().copyWith(textTheme: textTheme);
 
     final MarkdownStyleSheet style1 = new MarkdownStyleSheet.fromTheme(theme);
     final MarkdownStyleSheet style2 = new MarkdownStyleSheet.fromTheme(theme);
@@ -193,7 +197,7 @@ String _dumpRenderView() {
 }
 
 /// Wraps a widget with a left-to-right [Directionality] for tests.
-Widget _wrapLtr(Widget child) {
+Widget _boilerplate(Widget child) {
   return new Directionality(
     textDirection: TextDirection.ltr,
     child: child,
