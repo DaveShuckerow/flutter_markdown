@@ -8,6 +8,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 
+const imageUrl =
+    'https://pbs.twimg.com/profile_images/760249570085314560/yCrkrbl3.jpg';
+
 void main() {
   TextTheme textTheme = new Typography(platform: TargetPlatform.android)
       .black
@@ -136,8 +139,8 @@ void main() {
       final List<String> tapResults = <String>[];
 
       await tester.pumpWidget(_boilerplate(new Markdown(
-          data: '[First Link](firstHref) and [Second Link](secondHref)',
-          onTapLink: (value) => tapResults.add(value),
+        data: '[First Link](firstHref) and [Second Link](secondHref)',
+        onTapLink: (value) => tapResults.add(value),
       )));
 
       final RichText textWidget =
@@ -152,7 +155,6 @@ void main() {
         return true;
       });
 
-
       expect(span.children.length, 3);
       expect(span.children[0].children.length, 1);
       expect(span.children[1].children, null);
@@ -163,25 +165,25 @@ void main() {
       expect(tapResults, orderedEquals(['firstHref', 'secondHref']));
     });
   });
-  
+
   testWidgets('Image links', (WidgetTester tester) async {
-    await tester
-        .pumpWidget(_boilerplate(const Markdown(data: '![alt](img#50x50)')));
+    await tester.pumpWidget(
+        _boilerplate(const Markdown(data: '![alt]($imageUrl#50x50)')));
 
     final Image image =
-      tester.allWidgets.firstWhere((Widget widget) => widget is Image);
+        tester.allWidgets.firstWhere((Widget widget) => widget is Image);
     final NetworkImage networkImage = image.image;
-    expect(networkImage.url, 'img');
+    expect(networkImage.url, imageUrl);
     expect(image.width, 50);
     expect(image.height, 50);
   });
 
   testWidgets('Image text', (WidgetTester tester) async {
-    await tester
-        .pumpWidget(_boilerplate(const Markdown(data: 'Hello ![alt](img#50x50)')));
+    await tester.pumpWidget(
+        _boilerplate(const Markdown(data: 'Hello ![alt]($imageUrl#50x50)')));
 
     final RichText richText =
-      tester.allWidgets.firstWhere((Widget widget) => widget is RichText);
+        tester.allWidgets.firstWhere((Widget widget) => widget is RichText);
     TextSpan textSpan = richText.text;
     expect(textSpan.children[0].text, 'Hello ');
     expect(textSpan.style, isNotNull);
@@ -224,11 +226,12 @@ void main() {
   });
 
   testWidgets('Changing config - style', (WidgetTester tester) async {
-    final ThemeData theme = new ThemeData.light().copyWith(textTheme: textTheme);
+    final ThemeData theme =
+        new ThemeData.light().copyWith(textTheme: textTheme);
 
     final MarkdownStyleSheet style1 = new MarkdownStyleSheet.fromTheme(theme);
     final MarkdownStyleSheet style2 =
-    new MarkdownStyleSheet.largeFromTheme(theme);
+        new MarkdownStyleSheet.largeFromTheme(theme);
     expect(style1, isNot(style2));
 
     await tester.pumpWidget(
@@ -244,7 +247,8 @@ void main() {
   });
 
   testWidgets('Style equality', (WidgetTester tester) async {
-    final ThemeData theme = new ThemeData.light().copyWith(textTheme: textTheme);
+    final ThemeData theme =
+        new ThemeData.light().copyWith(textTheme: textTheme);
 
     final MarkdownStyleSheet style1 = new MarkdownStyleSheet.fromTheme(theme);
     final MarkdownStyleSheet style2 = new MarkdownStyleSheet.fromTheme(theme);
