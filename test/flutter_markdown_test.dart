@@ -85,16 +85,106 @@ void main() {
     ]);
   });
 
-  testWidgets('Links', (WidgetTester tester) async {
+  group('Links', () {
+    testWidgets('Single link', (WidgetTester tester) async {
+      String tapResult;
+      await tester.pumpWidget(_boilerplate(new Markdown(
+        data: '[Link Text](href)',
+        onTapLink: (value) => tapResult = value,
+      )));
+
+      final RichText textWidget =
+          tester.allWidgets.firstWhere((Widget widget) => widget is RichText);
+      final TextSpan span = textWidget.text;
+
+      (span.children[0].children[0].recognizer as TapGestureRecognizer).onTap();
+
+      expect(span.children.length, 1);
+      expect(span.children[0].children.length, 1);
+      expect(span.children[0].children[0].recognizer.runtimeType,
+          equals(TapGestureRecognizer));
+      expect(tapResult, 'href');
+    });
+
+    testWidgets('Link with nested code', (WidgetTester tester) async {
+      final List<String> tapResults = <String>[];
+      await tester.pumpWidget(_boilerplate(new Markdown(
+        data: '[Link `with nested code` Text](href)',
+        onTapLink: (value) => tapResults.add(value),
+      )));
+
+      final RichText textWidget =
+          tester.allWidgets.firstWhere((Widget widget) => widget is RichText);
+      final TextSpan span = textWidget.text;
+
+      final List<Type> gestureRecognizerTypes = <Type>[];
+      span.visitTextSpan((TextSpan textSpan) {
+        TapGestureRecognizer recognizer = textSpan.recognizer;
+        gestureRecognizerTypes.add(recognizer.runtimeType);
+        recognizer.onTap();
+        return true;
+      });
+
+      expect(span.children.length, 1);
+      expect(span.children[0].children.length, 3);
+      expect(gestureRecognizerTypes, everyElement(TapGestureRecognizer));
+      expect(tapResults.length, 3);
+      expect(tapResults, everyElement('href'));
+    });
+
+    testWidgets('Multiple links', (WidgetTester tester) async {
+      final List<String> tapResults = <String>[];
+
+      await tester.pumpWidget(_boilerplate(new Markdown(
+          data: '[First Link](firstHref) and [Second Link](secondHref)',
+          onTapLink: (value) => tapResults.add(value),
+      )));
+
+      final RichText textWidget =
+          tester.allWidgets.firstWhere((Widget widget) => widget is RichText);
+      final TextSpan span = textWidget.text;
+
+      final List<Type> gestureRecognizerTypes = <Type>[];
+      span.visitTextSpan((TextSpan textSpan) {
+        TapGestureRecognizer recognizer = textSpan.recognizer;
+        gestureRecognizerTypes.add(recognizer.runtimeType);
+        recognizer?.onTap();
+        return true;
+      });
+
+
+      expect(span.children.length, 3);
+      expect(span.children[0].children.length, 1);
+      expect(span.children[1].children, null);
+      expect(span.children[2].children.length, 1);
+
+      expect(gestureRecognizerTypes,
+          orderedEquals([TapGestureRecognizer, Null, TapGestureRecognizer]));
+      expect(tapResults, orderedEquals(['firstHref', 'secondHref']));
+    });
+  });
+  
+  testWidgets('Image links', (WidgetTester tester) async {
     await tester
-        .pumpWidget(_boilerplate(const Markdown(data: '[Link Text](href)')));
+        .pumpWidget(_boilerplate(const Markdown(data: '![alt](img#50x50)')));
 
-    final RichText textWidget =
-    tester.allWidgets.firstWhere((Widget widget) => widget is RichText);
-    final TextSpan span = textWidget.text;
+    final Image image =
+      tester.allWidgets.firstWhere((Widget widget) => widget is Image);
+    final NetworkImage networkImage = image.image;
+    expect(networkImage.url, 'img');
+    expect(image.width, 50);
+    expect(image.height, 50);
+  });
 
-    expect(
-        span.children[0].recognizer.runtimeType, equals(TapGestureRecognizer));
+  testWidgets('Image text', (WidgetTester tester) async {
+    await tester
+        .pumpWidget(_boilerplate(const Markdown(data: 'Hello ![alt](img#50x50)')));
+
+    final RichText richText =
+      tester.allWidgets.firstWhere((Widget widget) => widget is RichText);
+    TextSpan textSpan = richText.text;
+    expect(textSpan.children[0].text, 'Hello ');
+    expect(textSpan.style, isNotNull);
   });
 
   testWidgets('HTML tag ignored ', (WidgetTester tester) async {
