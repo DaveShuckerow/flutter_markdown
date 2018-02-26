@@ -11,9 +11,6 @@ import 'package:flutter/services.dart' show createHttpClient;
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart' as http;
 
-const imageUrl =
-    'https://pbs.twimg.com/profile_images/760249570085314560/yCrkrbl3.jpg';
-
 void main() {
   TextTheme textTheme = new Typography(platform: TargetPlatform.android)
       .black
@@ -148,8 +145,8 @@ void main() {
       final List<String> tapResults = <String>[];
 
       await tester.pumpWidget(_boilerplate(new Markdown(
-        data: '[First Link](firstHref) and [Second Link](secondHref)',
-        onTapLink: (value) => tapResults.add(value),
+          data: '[First Link](firstHref) and [Second Link](secondHref)',
+          onTapLink: (value) => tapResults.add(value),
       )));
 
       final RichText textWidget =
@@ -360,12 +357,11 @@ void main() {
   });
 
   testWidgets('Changing config - style', (WidgetTester tester) async {
-    final ThemeData theme =
-        new ThemeData.light().copyWith(textTheme: textTheme);
+    final ThemeData theme = new ThemeData.light().copyWith(textTheme: textTheme);
 
     final MarkdownStyleSheet style1 = new MarkdownStyleSheet.fromTheme(theme);
     final MarkdownStyleSheet style2 =
-        new MarkdownStyleSheet.largeFromTheme(theme);
+    new MarkdownStyleSheet.largeFromTheme(theme);
     expect(style1, isNot(style2));
 
     await tester.pumpWidget(
@@ -381,8 +377,7 @@ void main() {
   });
 
   testWidgets('Style equality', (WidgetTester tester) async {
-    final ThemeData theme =
-        new ThemeData.light().copyWith(textTheme: textTheme);
+    final ThemeData theme = new ThemeData.light().copyWith(textTheme: textTheme);
 
     final MarkdownStyleSheet style1 = new MarkdownStyleSheet.fromTheme(theme);
     final MarkdownStyleSheet style2 = new MarkdownStyleSheet.fromTheme(theme);
